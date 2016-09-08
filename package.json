@@ -1,0 +1,22 @@
+{
+  "name": "testbot",
+  "version": "1.0.0",
+  "description": "A utility and library for testing bots using script files",
+  "main": "index.js",
+  "dependencies": {
+    "underscore": "^1.8.3",
+    "yamljs": "^0.2.8",
+    "uuid": "^2.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "tap test/*.js"
+  },
+  "keywords": [
+    "bot",
+    "testing",
+    "chatbots"
+  ],
+  "author": "Elchanan Shor",
+  "license": "MPL-2.0"
+}

@@ -1,0 +1,18 @@
+//line beginning with // are ignored
+//question mark denotes a directive. ?param is used to set a parameter
+?param packages dodido/test-basic
+?connect
+//wait for 1000 ms
+?wait 1000
+//lines are sent to the bot as an outgoing message
+hello world
+	Hello to you to
+	Great talking to you
+who are you
+	I am a bot
+	My name is Dodido
+	What is yours?
+John Doe
+	Nice meeting you John Doe
+?exit
+should not get here

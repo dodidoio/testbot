@@ -6,6 +6,12 @@ var steps = null;
 var input = null;
 var testCount = 0;
 
+var filterFloat = function (value) {
+	if(/^(\-|\+)?([0-9]+(\.[0-9]+)?|Infinity)$/.test(value))
+		return Number(value);
+	return NaN;
+};
+
 function isPromise(obj){
 	return typeof obj.then === 'function';
 }
@@ -47,7 +53,7 @@ function handleWait(line){
 		return new Promise(function(resolve,reject){
 			setTimeout(function(){
 				resolve(true);
-			},Number.parseFloat(match[1]));
+			},filterFloat(match[1]));
 		});
 	}
 	return false;
@@ -67,8 +73,12 @@ function handleParam(line,platform,params){
 		var val = match[2];
 		if(val==="true")val = true;
 		if(val==="false")val = false;
-		if(!isNaN(Number.parseFloat(val))) val = Number.parseFloat(val);
+		if(!isNaN(filterFloat(val))) 
+			val = filterFloat(val);
 		params[match[1]] = val;
+		if(params.verbose){
+			console.info('set param',match[1],'to',JSON.stringify(val));
+		}
 		return true;
 	}
 	return false;
@@ -85,16 +95,12 @@ function handleExit(line,platform,params){
 function handleConnect(line,platform,params){
 	if(line.match(/\^?connect/)){
 		let ret = scriptPlatform.connect(params);
-		if(isPromise(ret)){
-			ret.catch(function(err){
-				exit('ERROR initializing test bot - ' + err);
-			});
-			return ret.then(function(){
-				return true;
-			});
-		}else{
+		ret.catch(function(err){
+			exit('ERROR initializing test bot - ' + err);
+		});
+		return ret.then(function(){
 			return true;
-		}
+		});
 	}
 	return false;
 }

@@ -1,6 +1,6 @@
 {
   "name": "testbot",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "description": "A utility and library for testing bots using script files",
   "main": "index.js",
   "dependencies": {
@@ -8,6 +8,9 @@
     "yamljs": "^0.2.8",
     "uuid": "^2.0.2"
   },
+	"bin":{
+		"testbot" : "./cli.js"
+	},
   "devDependencies": {},
   "scripts": {
     "test": "tap test/*.js"

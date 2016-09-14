@@ -2,9 +2,11 @@ const fs = require('fs');
 const _ = require('underscore');
 const readline = require('./getline');
 const yaml = require('yamljs');
+const colors = require('colors');
 var steps = null;
 var input = null;
 var testCount = 0;
+var lineNumber = 0;
 
 var filterFloat = function (value) {
 	if(/^(\-|\+)?([0-9]+(\.[0-9]+)?|Infinity)$/.test(value))
@@ -109,18 +111,18 @@ function handleSendText(line,platform,params){
 	return scriptPlatform.sendText(line,params);
 }
 
-function handleReceiveText(line,platform,params){
+function handleReceiveText(line,platform,params,lineNumber){
 	const match = line.match(/^\t(.*)$/);
 	if(!match){
 		return false;
 	}
 	return scriptPlatform.receiveText(params).then((text)=>{
 		if(text === match[1]){
-			reportOk(match[1]);
+			reportOk(match[1] + ":" + lineNumber,null);
 		}else{
-			reportNotOk(match[1],{found:text,wanted:match[1]});
+			reportNotOk(match[1] + ":" + lineNumber,{found:text,wanted:match[1]});
 		}},(err)=>{
-			reportNotOk(match[1],{reason:err});
+			reportNotOk(match[1] + ":" + lineNumber,{reason:err});
 		});
 }
 
@@ -128,18 +130,18 @@ function handleEmptyLine(line){
 	return line.match(/^\s*$/);
 }
 
-function handleRegex(line,platform,params){
+function handleRegex(line,platform,params,lineNumber){
 	const match = line.match(/^\t\/(.*)\/$/);
 	if(!match){
 		return false;
 	}
 	return scriptPlatform.receiveText(params).then((text)=>{
 		if(new RegExp(match[1]).test(text)){
-			reportOk(match[1]);
+			reportOk(match[1] + ":" + lineNumber,null);
 		}else{
-			reportNotOk(match[1],{found:text,wanted:match[1]});
+			reportNotOk(match[1] + ":" + lineNumber,{found:text,wanted:match[1]});
 		}},(err)=>{
-			reportNotOk(match[1],{reason:err});
+			reportNotOk(match[1] + ":" + lineNumber,{reason:err});
 		});
 }
 
@@ -168,9 +170,12 @@ function testScript(filename,platform,params){
 	});
 
 	steps.on('line', (line) => {
-		//console.log('LINE',line);
 		steps.pause();
-		processStep(line);
+		lineNumber++;
+		processStep(line,lineNumber);
+	});
+	steps.on('close', () => {
+		exit();
 	});
 
 	//look for platform. If doesn't exits then bail out
@@ -180,19 +185,19 @@ function testScript(filename,platform,params){
 	try{
 		scriptPlatform = require('./platforms/' + platform);
 	}catch(e){
-		console.log(e);
+		console.error(e);
 		exit("There is no plugin for the '" + platform + "' platform.");
 	}
 }
 
 
-function processStep(line){
+function processStep(line,lineNumber){
 	function nextStep(){
 		steps.resume();
 	}
 	
 	for(let i=0;i<handlers.length;++i){
-		var result = handlers[i](line,scriptPlatform,scriptParams);
+		var result = handlers[i](line,scriptPlatform,scriptParams,lineNumber);
 		if(result){
 			//line is handled by this handler
 			if(isPromise(result)){

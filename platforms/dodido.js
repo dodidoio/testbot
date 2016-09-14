@@ -1,39 +1,46 @@
 const client = require('../../dodido-client');
 const cid = require('uuid').v4();
 const DEFAULT_TIMEOUT = 10000;
-var request = null;
-var question = null;
+
+var _request = null;
+var _question = null;
 var _events = [];
 var _listeners = [];
 var evtId = 1;
+var _requestActive = false;
 
+///////////////////////////////////////////////////////////////////////////////
+//managing state of requests and questions
+///////////////////////////////////////////////////////////////////////////////
+function activeRequest(){return _requestActive? _request : null;}
+function activeQuestion(){return _question;}
 function setRequest(req){
-	//console.log('SET REQUEST');
-	request = req;
-	question = null;
+	function requestIsNotActive(){_requestActive = false;}
+	req.then(requestIsNotActive,requestIsNotActive);
+	_requestActive = true;
+	_request = req;
+	_question = null;
 	_events = [];
 	_listeners = [];//clear all listeners - we count on them timing-out so no need to reject them
 }
 function setQuestion(id,expecting){
-	question = {id:id,expecting:expecting};
+	_question = {id:id,expecting:expecting};
 }
 
 function clearQuestion(id){
-	if(question.id === id){
-		question = null;
+	if(_question.id === id){
+		_question = null;
 	}
 }
 
 function readEvent(timeout){
-	//console.log('CALL',timeout);
-	if(!request){
+	if(!activeRequest()){
 		//no active request - reject
 		return Promise.reject('no active request');
 	}
 	else if(_events.length > 0){
 		//an event is already in cache -return it
 		var ret = _events.shift();
-		//console.log('READ',ret);
 		return Promise.resolve(ret);
 	}else{
 		//no event in cache - create promise and add it to listeners
@@ -48,16 +55,15 @@ function readEvent(timeout){
 
 function writeEvent(evt){
 	evt.id = evtId++;
-	//console.log('WRITE',evt);
 	if(_listeners.length > 0){
 		//there are listeners in line - pass the event to the first listener
-		//console.log('READ',evt);
 		_listeners.shift()(evt);
 	}else{
 		//no listeners waiting - just cache the event
 		_events.push(evt);
 	}
 }
+///////////////////////////////////////////////////////////////////////////////
 
 module.exports = {
 	connect : function(params){
@@ -66,14 +72,34 @@ module.exports = {
 		if(!token){
 			return Promise.reject('connection token was missing');
 		}
-		return client.connect(server,token);
+		var ret = client.connect(server,token);
+		ret.on('opened',()=>{
+			if(params.verbose){
+				console.info('Connection to server opened');
+			}
+		});
+		ret.on('error',(err)=>{
+			if(params.verbose){
+				console.error('Error connecting to server:',err);
+			}
+		});
+		return ret;
 	},
 	
 	sendText : function(text,params){
+		if(activeRequest() && !activeQuestion()){
+			//there is an active request and we are not waiting for an answer - wait until the request is completed
+			return activeRequest().then(
+				module.exports.sendText.bind(this,text,params),
+				module.exports.sendText.bind(this,text,params));
+		}
+		if(params.verbose){
+			console.info('user: ' + text);
+		}
 		//if there is a pending question then just answer it
-		if(question){
-			client.answer(question.id,text,question.expecting);
-			clearQuestion(question.id);
+		if(activeQuestion()){
+			client.answer(activeQuestion().id,text,activeQuestion().expecting);
+			clearQuestion(activeQuestion().id);
 			return true;
 		}
 		const expecting = params.expecting || 'action';
@@ -85,17 +111,32 @@ module.exports = {
 		};
 		newRequest = client.request(input,cid);
 		setRequest(newRequest);
-		request.on('error',(err)=>{
-			console.error('Error sendingText -',err);
+		newRequest.on('error',(err)=>{
+			console.error(('Error sendingText - ' + err).red.bold);
+			console.error(`\ttext is: ${text}`.red.bold);
 		});
-		request.on('ask',(message,id,description,expecting)=>{
+		newRequest.on('fail',()=>{
+			console.error(('Error parsing request: ' + text).red.bold);
+		});
+		newRequest.on('log',(message)=>{
+			if(params.log){
+				console.info('log: ' + message);
+			}
+		});
+		newRequest.on('ask',(message,id,description,expecting)=>{
 			setQuestion(id,expecting);
+			if(params.verbose){
+				console.info('bot asked: ' + text);
+			}
 			writeEvent({event:'ask',message:message,id:id,description:description,exepcting:expecting});
 		});
-		request.on('say',(message)=>{
+		newRequest.on('say',(message)=>{
+			if(params.verbose){
+				console.info('bot: ' + text);
+			}
 			writeEvent({event:'say',message:message});
 		});
-		request.then(()=>{
+		newRequest.then(()=>{
 			//after request is completed remove it
 		});
 		return true;

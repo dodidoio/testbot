@@ -33,31 +33,40 @@ function clearQuestion(id){
 	}
 }
 
-function readEvent(timeout){
+function readEvent(evt,timeout){
+	evt = Array.isArray(evt)? evt : [evt];
 	if(!activeRequest()){
 		//no active request - reject
 		return Promise.reject('no active request');
 	}
-	else if(_events.length > 0){
-		//an event is already in cache -return it
+	//go over all cached events until the requested event type found
+	while(_events.length > 0){
 		var ret = _events.shift();
-		return Promise.resolve(ret);
-	}else{
-		//no event in cache - create promise and add it to listeners
-		return new Promise(function(resolve,reject){
-			setTimeout(()=>{
-				reject('timeout');
-			},timeout || DEFAULT_TIMEOUT);
-			_listeners.push(resolve);
-		});
+		for(let i=0;i<evt.length;++i){
+			if(evt[i] === ret.event){
+				return Promise.resolve(ret);
+			}
+		}
 	}
+	//no event in cache - create promise and add it to listeners
+	return new Promise(function(resolve,reject){
+		setTimeout(()=>{
+			reject('timeout');
+		},timeout || DEFAULT_TIMEOUT);
+		_listeners.push({evt:evt,func:resolve});
+	});
 }
 
 function writeEvent(evt){
 	evt.id = evtId++;
 	if(_listeners.length > 0){
-		//there are listeners in line - pass the event to the first listener
-		_listeners.shift()(evt);
+		//there are listeners in line - if the first listener can handle the event then hanlde it
+		let first = _listeners[0];
+		for(let i=0;i<first.evt.length;++i){
+			if(evt.event === first.evt[i]){
+				return _listeners.shift().func(evt);
+			}
+		}
 	}else{
 		//no listeners waiting - just cache the event
 		_events.push(evt);
@@ -102,20 +111,22 @@ module.exports = {
 			clearQuestion(activeQuestion().id);
 			return true;
 		}
-		const expecting = params.expecting || 'action';
-		const packages = params.packages? params.packages.split(',') : [];
 		const input = {
 			input:text,
-			packages : packages,
-			expecting:expecting
+			packages : params.packages? params.packages.split(',') : [],
+			token : params['request-token'] || null,
+			userid : params['userid'] || null,
+			expecting:params.expecting || 'action'
 		};
 		newRequest = client.request(input,cid);
 		setRequest(newRequest);
 		newRequest.on('error',(err)=>{
+			writeEvent({event:'error',message:err});
 			console.error(('Error sendingText - ' + err).red.bold);
 			console.error(`\ttext is: ${text}`.red.bold);
 		});
 		newRequest.on('fail',()=>{
+			writeEvent({event:'fail',message:{}});
 			console.error(('Error parsing request: ' + text).red.bold);
 		});
 		newRequest.on('log',(message)=>{
@@ -144,7 +155,15 @@ module.exports = {
 	
 	receiveText : function(props){
 		var timeout = props.timeout || DEFAULT_TIMEOUT;
-		return readEvent(timeout).then((evt)=>{
+		return readEvent(['say','ask'],timeout).then((evt)=>{
+			return evt.message;
+		},(err)=>{
+			return Promise.reject(err);
+		});
+	},
+	receiveEvent : function(eventName,props){
+		var timeout = props.timeout || DEFAULT_TIMEOUT;
+		return readEvent(eventName,timeout).then((evt)=>{
 			return evt.message;
 		},(err)=>{
 			return Promise.reject(err);

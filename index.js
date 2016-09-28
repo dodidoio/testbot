@@ -6,6 +6,7 @@ const colors = require('colors');
 var steps = null;
 var input = null;
 var testCount = 0;
+var errorCount = 0;
 var lineNumber = 0;
 
 var filterFloat = function (value) {
@@ -30,6 +31,7 @@ function reportOk(description,info){
 
 function reportNotOk(description,info){
 	testCount++;
+	errorCount++;
 	console.info('not ok',testCount,description);
 	if(info){
 		console.info('  ---');
@@ -45,6 +47,10 @@ function exit(reason){
 	}
 	if(scriptParams.beepOnExit){
 		console.info('\007');
+	}
+	if(reason || errorCount > 0){
+		process.exit(1);
+	}else{
 		process.exit(0);
 	}
 }
@@ -126,6 +132,22 @@ function handleReceiveText(line,platform,params,lineNumber){
 		});
 }
 
+function handleReceiveEvent(line,platform,params,lineNumber){
+	const match = line.match(/^\t\\(\S+)(.*)$/);
+	if(!match){
+		return false;
+	}
+	return scriptPlatform.receiveEvent(match[1],params).then((obj)=>{
+		const ok = new Function('return ' + match[2]).call(obj);
+		if(ok){
+			reportOk('event ' + match[1] + ":" + lineNumber,null);
+		}else{
+			reportNotOk('event ' + match[1] + ":" + lineNumber);
+		}},(err)=>{
+			reportNotOk('event ' + match[1] + ":" + lineNumber,{reason:err});
+		});
+}
+
 function handleEmptyLine(line){
 	return line.match(/^\s*$/);
 }
@@ -148,7 +170,7 @@ function handleRegex(line,platform,params,lineNumber){
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                     handlers
 const handlers = [handleEmptyLine, handleRemark, handleParam, handleExit, handleConnect, handleWait, handleRegex, 	
-									handleReceiveText, handleSendText
+									handleReceiveEvent, handleReceiveText, handleSendText
 								 ];
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -9,7 +9,6 @@ if(args._.length < 2){
 var filename = args._[1];
 var botname = args._[0];
 delete args._;
-console.log(args);
 require('./index')(filename,botname,args);
 
 function showFormat(){

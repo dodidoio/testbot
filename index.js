@@ -100,6 +100,14 @@ function handleExit(line,platform,params){
 	return false;
 }
 
+function handleCommand(line,platform,params){
+	if(line.match(/^\$(\S+)\s*(.*)?$/)){
+		const match = line.match(/^\$(\S+)\s*(.*)?$/);
+		platform.command(match[1],match[2]||null);
+		return true;
+	}
+	return false;
+}
 function handleConnect(line,platform,params){
 	if(line.match(/\^?connect/)){
 		let ret = scriptPlatform.connect(params);
@@ -170,7 +178,7 @@ function handleRegex(line,platform,params,lineNumber){
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                     handlers
 const handlers = [handleEmptyLine, handleRemark, handleParam, handleExit, handleConnect, handleWait, handleRegex, 	
-									handleReceiveEvent, handleReceiveText, handleSendText
+									handleReceiveEvent, handleReceiveText,handleCommand, handleSendText
 								 ];
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

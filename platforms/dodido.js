@@ -1,5 +1,5 @@
 const client = require('../../dodido-client');
-const cid = require('uuid').v4();
+var cid = require('uuid').v4();
 const DEFAULT_TIMEOUT = 10000;
 
 var _request = null;
@@ -168,5 +168,11 @@ module.exports = {
 		},(err)=>{
 			return Promise.reject(err);
 		});
+	},
+	command : function(command,argText){
+		if(command === 'clear'){
+			//start a new context
+			cid = require('uuid').v4();
+		}
 	}
 };

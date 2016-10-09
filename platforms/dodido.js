@@ -129,6 +129,12 @@ module.exports = {
 			writeEvent({event:'fail',message:{}});
 			console.error(('Error parsing request: ' + text).red.bold);
 		});
+		newRequest.on('show',(entity,type)=>{
+			if(params['dump-show']){
+				console.info('show',type,JSON.stringify(entity));
+			}
+			writeEvent({event:'show',message:{entity:entity,type:type}});
+		});
 		newRequest.on('log',(message)=>{
 			if(params.log){
 				console.info('log: ' + message);

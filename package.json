@@ -7,7 +7,8 @@
     "underscore": "^1.8.3",
     "yamljs": "^0.2.8",
     "uuid": "^2.0.2",
-		"colors" : "*"
+		"colors" : "*",
+    "dodido-client": "https://github.com/dodidoio/dodido-client.git"
   },
 	"bin":{
 		"testbot" : "./cli.js"

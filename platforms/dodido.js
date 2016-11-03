@@ -1,4 +1,4 @@
-const client = require('../../dodido-client');
+const client = require('dodido-client');
 var cid = require('uuid').v4();
 const DEFAULT_TIMEOUT = 10000;
 

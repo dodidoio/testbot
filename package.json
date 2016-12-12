@@ -8,6 +8,7 @@
     "yamljs": "^0.2.8",
     "uuid": "^2.0.2",
 		"colors" : "*",
+		"minimist":"*",
     "dodido-client": "https://github.com/dodidoio/dodido-client.git"
   },
 	"bin":{

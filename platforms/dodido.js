@@ -180,5 +180,19 @@ module.exports = {
 			//start a new context
 			cid = require('uuid').v4();
 		}
+	},
+	help : function(){
+		return [
+			"Options for the dodido platform",
+			"\tserver:",
+			"\ttoken: ",
+			"\tpackages: comma separated list of packages to use",
+			"\tuserid: userid to use for the requests",
+			"\tverbose: print verbose messages {true/false}",
+			"\texpecting: type goal for the request",
+			"\tlog: print log messages {true/false}",
+			"Commands:",
+			"\tclear - clear context"
+		].join('\n');
 	}
 };

@@ -56,7 +56,7 @@ function exit(reason){
 }
 
 function handleWait(line){
-	var match = line.match(/^\?wait\s+(\d+)$/);
+	var match = line.match(/^\.wait\s+(\d+)$/);
 	if(match){
 		return new Promise(function(resolve,reject){
 			setTimeout(function(){
@@ -76,7 +76,7 @@ function handleRemark(line){
 }
 
 function handleParam(line,platform,params){
-	const match = line.match(/^\?param\s+(\S+)\s+(.+)$/);
+	const match = line.match(/^\.param\s+(\S+)\s+(.+)$/);
 	if(match){
 		var val = match[2];
 		if(val==="true")val = true;
@@ -93,7 +93,7 @@ function handleParam(line,platform,params){
 }
 
 function handleExit(line,platform,params){
-	if(line.match(/\^?exit/)){
+	if(line.match(/^\.exit/)){
 		exit();
 		return true;
 	}

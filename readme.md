@@ -29,13 +29,15 @@ John Doe
 ?exit
 should not get here
 ```
-Here is the list of the step types that are supported:
+Here is a list of some step types that are supported:
 * //remarks - line starts with //
 * ?connect - connect the bot using the platform dependant APIs
 * ?param {name} {value} - set a parameter. The parameter can later be used by the messaging platform plugin
 * ?wait {ms} - wait for ms before continuing with the script
 * \t{test text} - match received message with the text - the text must start with a tab.
 * \t/{regular expression}/ - match received message with a regular expression
+
+For full list call the command line with `--help`
 
 ##Installing
 Using npm
@@ -54,3 +56,4 @@ Use the following command:
 ```bash
 $ testbot {filename} {platform} --param1 value1 --param2 value2
 ```
+use `--help`` for general help and `--help platform` for platform specific help

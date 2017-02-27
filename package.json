@@ -1,6 +1,6 @@
 {
   "name": "testbot",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A utility and library for testing bots using script files",
   "main": "index.js",
   "dependencies": {

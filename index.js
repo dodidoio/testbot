@@ -41,6 +41,7 @@ function reportNotOk(description,info){
 }
 
 function exit(reason){
+	console.info(`# Completed. Success: ${testCount - errorCount}, Fail: ${errorCount}`);
 	console.info(`1..${testCount}`);
 	if(reason){
 		console.info('Bail out!',reason);

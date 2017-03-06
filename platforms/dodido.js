@@ -107,7 +107,13 @@ module.exports = {
 		}
 		//if there is a pending question then just answer it
 		if(activeQuestion()){
-			client.answer(activeQuestion().id,text,activeQuestion().expecting);
+			client.answer(activeQuestion().id,{
+				input:text,
+				expecting: activeQuestion().expecting,
+				packages: params.packages? params.packages.split(',') : [],
+				token : params['request-token'] || null,
+				userid : params['userid'] || null
+			});
 			clearQuestion(activeQuestion().id);
 			return true;
 		}

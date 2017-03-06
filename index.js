@@ -8,7 +8,7 @@ var input = null;
 var testCount = 0;
 var errorCount = 0;
 var lineNumber = 0;
-
+var skip = false;
 var filterFloat = function (value) {
 	if(/^(\-|\+)?([0-9]+(\.[0-9]+)?|Infinity)$/.test(value))
 		return Number(value);
@@ -38,6 +38,9 @@ function reportNotOk(description,info){
 		console.info(yaml.stringify(info).split('\n').map((line)=>{return '  ' + line + '\n';}).join(''));
 		console.info('  ...');
 	}
+	if(scriptParams.quitOnError){
+		exit('Quit on first error');
+	}
 }
 
 function exit(reason){
@@ -66,6 +69,42 @@ function handleWait(line){
 		});
 	}
 	return false;
+}
+
+function handleEndSkip(line){
+	if(line.match(/^\.skip end/)){
+		console.log('handleEndSkip');
+		skip = false;
+		return true;
+	}else{
+		return false;
+	}
+}
+
+function handleStartSkip(line){
+	if(line.match(/^\.skip/)){
+		console.log('handleStartSkip');
+		skip = true;
+		return true;
+	}else{
+		return false;
+	}
+}
+function handleSkip(line,platform,params,lineNumber){
+	if(skip){
+		console.info('Skipping line',lineNumber);
+		return true;
+	}else{
+		return false;
+	}
+}
+
+function handleRemark(line){
+	if(line.match(/^\s*\/\//)){
+		return true;
+	}else{
+		return false;
+	}
 }
 
 function handleRemark(line){
@@ -178,9 +217,22 @@ function handleRegex(line,platform,params,lineNumber){
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                     handlers
-const handlers = [handleEmptyLine, handleRemark, handleParam, handleExit, handleConnect, handleWait, handleRegex, 	
-									handleReceiveEvent, handleReceiveText,handleCommand, handleSendText
-								 ];
+const handlers = [
+	handleEndSkip,
+	handleSkip,
+	handleEmptyLine, 
+	handleStartSkip,
+	handleRemark, 
+	handleParam, 
+	handleExit, 
+	handleConnect, 
+	handleWait, 
+	handleRegex,
+	handleReceiveEvent, 
+	handleReceiveText,
+	handleCommand, 
+	handleSendText
+];
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const scriptParams = {

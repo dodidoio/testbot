@@ -38,6 +38,7 @@ function showFormat(){
 		"\t.param param-name param-value",
 		"\t.connect\ttconnect to the dodido server",
 		"\t.wait ms-to-wait",
+		"\t.skip \tSkip the following line until reaching the line .skip end",
 		"\t.exit\texit the script processing",
 		"\tlines not starting with dot are sent to the bot as an outgoing message",
 		"\tlines starting with tab represent expected response",

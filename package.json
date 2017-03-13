@@ -9,8 +9,8 @@
     "uuid": "^2.0.2",
 		"colors" : "*",
 		"minimist":"*",
-    "dodido-client": "https://github.com/dodidoio/dodido-client.git"
-  },
+		"dodido-client": "^0.1.4"
+	},
 	"bin":{
 		"testbot" : "./cli.js"
 	},

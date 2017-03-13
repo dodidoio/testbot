@@ -113,6 +113,9 @@ module.exports = {
 				packages: params.packages? params.packages.split(',') : [],
 				token : params['request-token'] || null,
 				userid : params['userid'] || null
+			},activeQuestion().expecting,{
+				token : params['request-token'] || null,
+				userid : params['userid'] || null
 			});
 			clearQuestion(activeQuestion().id);
 			return true;

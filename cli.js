@@ -20,7 +20,7 @@ if(args.help){
 }
 
 if(args._.length < 2){
-	console.log('Missing arguments. Format must be:');
+	console.error('Missing arguments. Format must be:');
 	showFormat();
 	process.exit(1);
 }

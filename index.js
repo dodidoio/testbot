@@ -73,7 +73,6 @@ function handleWait(line){
 
 function handleEndSkip(line){
 	if(line.match(/^\.skip end/)){
-		console.log('handleEndSkip');
 		skip = false;
 		return true;
 	}else{
@@ -83,7 +82,6 @@ function handleEndSkip(line){
 
 function handleStartSkip(line){
 	if(line.match(/^\.skip/)){
-		console.log('handleStartSkip');
 		skip = true;
 		return true;
 	}else{

@@ -4,16 +4,17 @@
   "description": "A utility and library for testing bots using script files",
   "main": "index.js",
   "dependencies": {
+    "colors": "*",
+    "dodido-client": "^0.1.4",
+    "handlebars": "^4.0.6",
+    "minimist": "*",
     "underscore": "^1.8.3",
-    "yamljs": "^0.2.8",
     "uuid": "^2.0.2",
-		"colors" : "*",
-		"minimist":"*",
-		"dodido-client": "^0.1.4"
-	},
-	"bin":{
-		"testbot" : "./cli.js"
-	},
+    "yamljs": "^0.2.8"
+  },
+  "bin": {
+    "testbot": "./cli.js"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "tap test/*.js"

@@ -3,6 +3,8 @@ const _ = require('underscore');
 const readline = require('./getline');
 const yaml = require('yamljs');
 const colors = require('colors');
+const handlebars = require('handlebars');
+
 var steps = null;
 var input = null;
 var testCount = 0;
@@ -15,6 +17,10 @@ var filterFloat = function (value) {
 	return NaN;
 };
 
+function template(text,params){
+	return 	handlebars.compile(text)(params);
+
+}
 function isPromise(obj){
 	return typeof obj.then === 'function';
 }
@@ -116,7 +122,7 @@ function handleRemark(line){
 function handleParam(line,platform,params){
 	const match = line.match(/^\.param\s+(\S+)\s+(.+)$/);
 	if(match){
-		var val = match[2];
+		var val = template(match[2],params);
 		if(val==="true")val = true;
 		if(val==="false")val = false;
 		if(!isNaN(filterFloat(val))) 
@@ -160,7 +166,7 @@ function handleConnect(line,platform,params){
 }
 
 function handleSendText(line,platform,params){
-	return scriptPlatform.sendText(line,params);
+	return scriptPlatform.sendText(template(line,params),params);
 }
 
 function handleReceiveText(line,platform,params,lineNumber){
@@ -169,12 +175,13 @@ function handleReceiveText(line,platform,params,lineNumber){
 		return false;
 	}
 	return scriptPlatform.receiveText(params).then((text)=>{
-		if(text === match[1]){
-			reportOk(match[1] + ":" + lineNumber,null);
+		let expected = template(match[1],params);
+		if(text === expected){
+			reportOk(expected + ":" + lineNumber,null);
 		}else{
-			reportNotOk(match[1] + ":" + lineNumber,{found:text,wanted:match[1]});
+			reportNotOk(expected + ":" + lineNumber,{found:text,wanted:match[1]});
 		}},(err)=>{
-			reportNotOk(match[1] + ":" + lineNumber,{reason:err});
+			reportNotOk(expected + ":" + lineNumber,{reason:err});
 		});
 }
 
@@ -204,12 +211,15 @@ function handleRegex(line,platform,params,lineNumber){
 		return false;
 	}
 	return scriptPlatform.receiveText(params).then((text)=>{
-		if(new RegExp(match[1]).test(text)){
-			reportOk(match[1] + ":" + lineNumber,null);
+		let reg = template(match[1],params);
+		let test = new RegExp(reg).exec(text);
+		if(test){
+			params.regex = test;
+			reportOk(reg + ":" + lineNumber,null);
 		}else{
-			reportNotOk(match[1] + ":" + lineNumber,{found:text,wanted:match[1]});
+			reportNotOk(reg + ":" + lineNumber,{found:text,wanted:match[1]});
 		}},(err)=>{
-			reportNotOk(match[1] + ":" + lineNumber,{reason:err});
+			reportNotOk(reg + ":" + lineNumber,{reason:err});
 		});
 }
 

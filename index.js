@@ -49,6 +49,9 @@ function reportNotOk(description,info){
 	}
 }
 
+function reportError(){
+	console.error(Array.from(arguments,(el)=>el.toString()).join(' ').red.bold);
+}
 function exit(reason){
 	console.info(`# Completed. Success: ${testCount - errorCount}, Fail: ${errorCount}`);
 	console.info(`1..${testCount}`);
@@ -191,7 +194,9 @@ function handleReceiveEvent(line,platform,params,lineNumber){
 		return false;
 	}
 	return scriptPlatform.receiveEvent(match[1],params).then((obj)=>{
+		/* jshint ignore:start */
 		const ok = new Function('return ' + match[2]).call(obj);
+		/* jshint ignore:end */
 		if(ok){
 			reportOk('event ' + match[1] + ":" + lineNumber,null);
 		}else{

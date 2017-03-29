@@ -164,7 +164,7 @@ module.exports = {
 		});
 		newRequest.then(()=>{
 			//after request is completed remove it
-		});
+		},(err)=>console.error(err.toString().red.bold,err.stack));
 		return true;
 	},
 	

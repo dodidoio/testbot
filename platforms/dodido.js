@@ -197,7 +197,7 @@ module.exports = {
 	help : function(){
 		return [
 			"Options for the dodido platform",
-			"\tserver:",
+			"\tserver: the mind server to use",
 			"\ttoken: ",
 			"\tpackages: comma separated list of packages to use",
 			"\tuserid: userid to use for the requests",

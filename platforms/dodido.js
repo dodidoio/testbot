@@ -138,6 +138,10 @@ module.exports = {
 			writeEvent({event:'fail',message:{}});
 			console.error(('Error parsing request: ' + text).red.bold);
 		});
+		newRequest.on('timeup',()=>{
+			writeEvent({event:'timeup',message:{}});
+			console.error(('Error answering question: - timeup').red.bold);
+		});
 		newRequest.on('show',(entity,type)=>{
 			if(params['dump-show']){
 				console.info('show',type,JSON.stringify(entity));

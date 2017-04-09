@@ -154,7 +154,7 @@ module.exports = {
 			}
 		});
 		newRequest.on('ask',(message,id,description,expecting)=>{
-			setQuestion(id,expecting);
+			setQuestion(id,Array.isArray(expecting)?'text':expecting);
 			if(params.verbose){
 				console.info('bot asked: ' + text);
 			}
